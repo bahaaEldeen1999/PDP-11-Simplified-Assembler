@@ -1,7 +1,5 @@
-;test , this , you , loser ,,,,
-mov R1,R0
-;this is a comment 
-label:
-;;;ccommmetknkrsnpn ponwqop nopn pognopnpnp np mhp mp m 
-
-add R0 ,                                           R0
+label1: inc r0
+inc X(r0)
+dec r1
+mov N(R0),X(R1)
+br label1
