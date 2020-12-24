@@ -28,13 +28,13 @@ file = open(filepath)
 output_file = open("output.txt", "w")
 '''
 0 => direct
-1 => auto + 
-2 => auto - 
-3 => indexed 
+1 => auto +
+2 => auto -
+3 => indexed
 4 => immediate
 5 => relative
 6 => indirect
-7 => auto + indirect 
+7 => auto + indirect
 8 => auto - indirect
 9 => index indirect
 10 => absolute
@@ -134,16 +134,20 @@ for line in file:
 
             word = line[i]
             word = word.strip().lower()
-            # print(word)
+
             if word == "define":
                 SYMBOL_TABLE[line[i+1]] = line[i+2]
                 break
             if word[-1] == ":":
+                print(word[:-1])
                 LABEL_TABLE[word[:-1]] = word[:-1]
+                break
             i += 1
     except:
         print("Error in Assembling")
 file.seek(0)
+# print(SYMBOL_TABLE)
+noOfWordsArr = []
 # pass 2
 for line in file:
     # print(line)
@@ -167,9 +171,9 @@ for line in file:
                 # comment line
                 break
             if word in ONE_OP:
-                #print("line "+line[i+1])
+                # print("line "+line[i+1])
                 mode = checkAddressingMode(line[i+1], 0)
-                #print("mode "+str(mode))
+                # print("mode "+str(mode))
                 if mode == -1:
                     raise Exception("not valid")
                 instruction = ONE_OP[word].replace(" ", "")
@@ -177,15 +181,19 @@ for line in file:
                 instruction2 = AddExtraInstruction(i, line, mode)
                 FileArr.append(instruction)
                 if (instruction2 != ""):
+                    noOfWordsArr.append(2)
                     FileArr.append("\n")
                     FileArr.append(instruction2)
+                else:
+                    noOfWordsArr.append(1)
                 FileArr.append("\n")
                 break
             elif word in TWO_OP:
                 if line[i+2] == ',':
+                    noOfWords = 1
                     mode1 = checkAddressingMode(line[i+1], 0)
                     mode2 = checkAddressingMode(line[i+3], 0)
-                    #print("mode2 "+str(mode2), line[i+3])
+                    # print("mode2 "+str(mode2), line[i+3])
                     if mode1 == -1 or mode2 == -1:
                         raise Exception("not valid")
                     instruction = TWO_OP[word].replace(" ", "")
@@ -196,18 +204,22 @@ for line in file:
 
                     FileArr.append(instruction)
                     if (instruction1 != ""):
+                        noOfWords += 1
                         FileArr.append("\n")
                         FileArr.append(instruction1)
                     if (instruction2 != ""):
+                        noOfWords += 1
                         FileArr.append("\n")
                         FileArr.append(instruction2)
+                    noOfWordsArr.append(noOfWords)
                     FileArr.append("\n")
                     break
 
             elif word in BRANCH:
                 instruction = BRANCH[word].replace(" ", "")
                 instruction += LABEL_TABLE[line[i+1]]
-                FileArr.append(instruction)
+                FileArr.append(instruction+"\n")
+                noOfWordsArr.append(1)
                 break
             elif word in NO_OP:
                 pass
@@ -216,11 +228,50 @@ for line in file:
             elif i == 0 and word[-1] == ':':
                 # label
                 pass
+            elif word == "define":
+                FileArr.append(SYMBOL_TABLE[line[1]]+"\n")
+                noOfWordsArr.append(1)
+                break
             else:
                 print(word)
                 raise Exception("unknown word")
             i += 1
     except:
-        print("Error in Assembling")
+        print("Error in Assembling Pass 2")
 
+
+file.seek(0)
+currAddress = 0
+j = 0
+# pass 3
+for line in file:
+    try:
+        line = line.lower()
+        line = line.split()
+        # print(line)
+        if line[0][-1] == ":":
+            LABEL_TABLE[line[0][0:-1]] = str(currAddress)
+            if len(line) == 1:
+                continue
+        elif line[0] == "define":
+            SYMBOL_TABLE[line[1]] = str(currAddress)
+
+        currAddress += noOfWordsArr[j]
+        j += 1
+
+    except:
+        print("Error in pass 3 assembline")
+# print(LABEL_TABLE, SYMBOL_TABLE, FileArr)
+print(LABEL_TABLE)
+for i in range(len(FileArr)):
+    x = FileArr[i][8:].replace("\n", "")
+    if x in LABEL_TABLE:
+        base = int(LABEL_TABLE[x], 10)
+        #print(base, i)
+        address = base-(i//2)
+        address = f'{address:08b}'
+        #print("address ", address)
+        FileArr[i] = FileArr[i][:8] + str(address)+"\n"
+    elif FileArr[i] in SYMBOL_TABLE:
+        FileArr[i] = SYMBOL_TABLE[FileArr[i]]
 output_file.writelines(FileArr)

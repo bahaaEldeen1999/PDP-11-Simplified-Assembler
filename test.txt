@@ -2,4 +2,8 @@ label1: inc r0
 inc X(r0)
 dec r1
 mov N(R0),X(R1)
-br label1
+br label2
+label2: 
+mov R1, N(R6)
+define X 10
+define N 70
