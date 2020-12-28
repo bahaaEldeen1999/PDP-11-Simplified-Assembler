@@ -237,6 +237,8 @@ for line in file:
                 noOfWordsArr.append(1)
                 break
             elif word in NO_OP:
+                if word == "nop":
+                    break
                 instruction = NO_OP[word].replace(" ", "")
                 FileArr.append(instruction)
                 FileArr.append("\n")
