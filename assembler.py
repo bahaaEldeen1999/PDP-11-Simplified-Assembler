@@ -90,6 +90,7 @@ def buildInstruction(i, line, mode):
             instruction += REGISTERS[line[i+1][2:4]]
         elif mode == 3:
             instruction += REGISTERS[line[i+1][-3:-1]]
+            print(REGISTERS[line[i+1][-3:-1]], "gg")
         elif mode == 6:
             instruction += REGISTERS[line[i+1][1:]]
         elif mode == 7:
@@ -106,11 +107,14 @@ def buildInstruction(i, line, mode):
         return "-1"
 
 
+#print("x", buildInstruction(0, ["mov", "2(r1)", "r2"], 3))
+
+
 def AddExtraInstruction(i, line, mode):
     global MODES, REGISTERS, SYMBOL_TABLE
     instruction = ""
     if mode == 3:
-        instruction += line[i+1][0:-4]
+        instruction += str(bindigits(int(line[i+1][0:-4], 10), 16))
     elif mode == 9:
         instruction += line[i+1][1:-4]
     elif mode == 4:
@@ -268,7 +272,7 @@ file.seek(0)
 currAddress = 0
 j = 0
 # pass 3
-print(len(noOfWordsArr))
+# print(len(noOfWordsArr))
 for line in file:
     try:
         line = line.lower()
@@ -289,7 +293,7 @@ for line in file:
     except:
         print("Error in pass 3 assembling")
 # print(LABEL_TABLE, SYMBOL_TABLE, FileArr)
-print(LABEL_TABLE, FileArr)
+#print(LABEL_TABLE, FileArr)
 for i in range(len(FileArr)):
     x = FileArr[i][8:].replace("\n", "")
     if x in LABEL_TABLE:
